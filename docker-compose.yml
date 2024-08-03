@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+    hsa_stress_test_server:
+        container_name: hsa_stress_test_server
+        build: ./server
+        expose:
+            - 3000
+        ports:
+            - 0.0.0.0:9999:3000
+            - 0.0.0.0:9998:9249
+        command: npm run start:debug
+        volumes:
+            - ./server:/usr/src/app
+        networks:
+            hsa_stress_test_net:
+                ipv4_address: 172.16.114.10
+    
+    hsa_stress_test_db:
+        container_name: hsa_stress_test_db
+        image: arm64v8/postgres:latest
+        environment:
+            POSTGRES_DB: hsa_stress_test
+            POSTGRES_PASSWORD: password
+        ports:
+            - 4523:5432
+        volumes:
+            - hsa_stress_test_db:/var/lib/postgresql/data
+        networks:
+            hsa_stress_test_net:
+                ipv4_address: 172.16.114.11
+
+networks:
+    hsa_stress_test_net:
+        name: hsa_stress_test_net
+        ipam:
+            driver: default
+            config:
+            - subnet: 172.16.114.0/24
+
+volumes:
+    hsa_stress_test_db: {}
